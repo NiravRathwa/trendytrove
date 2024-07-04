@@ -11,6 +11,9 @@ import { Link } from "react-router-dom";
 import { StaggeredLabel } from "../components/StaggerdLabel";
 import CustomTextField from "../components/CustomTextField";
 import GoogleIcon from "../components/Icons";
+import { useState } from "react";
+import Loader from "../components/Loader";
+
 type SignInData = { email: string; mobileNo: string; password: string };
 
 const schema = yup.object().shape({
@@ -34,12 +37,17 @@ const SignUp = () => {
     mode: "onChange",
     resolver: yupResolver(schema),
   });
+const [loading,setLoading]=useState<boolean>(false)
+
   const onSubmit: SubmitHandler<SignInData> = async (data) => {
+
+    setLoading(true)
     const response = await API.signUp({
       email: data.email,
       phone: data.mobileNo,
       password: data.password,
     });
+    setLoading(false)
     if (!response?.success) {
       toast.error(response?.message || "Sign in failed!");
     }
@@ -63,6 +71,7 @@ const SignUp = () => {
   return (
     <div className="flex min-h-screen flex-col justify-center bg-background ">
       <ToastContainer />
+      {loading&& <Loader/>}
       <Grid container>
         <Grid item md={6} className="hidden md:block">
           <img

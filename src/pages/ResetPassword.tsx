@@ -1,13 +1,14 @@
 import CustomTextField from "../components/CustomTextField";
 import * as yup from "yup";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Button, Typography, Box } from "@mui/material";
 import { StaggeredLabel } from "../components/StaggerdLabel";
-import { SendIcon } from "../components/Icons";
 import API from "../services/api";
 import { toast, ToastContainer } from "react-toastify";
+import { useState } from "react";
+import Loader from "../components/Loader";
 
 const schema = yup.object().shape({
   password: yup
@@ -21,7 +22,7 @@ const schema = yup.object().shape({
 });
 
 const ResetPassword = () => {
-    const { token } = useParams<{ token?: string }>();
+  const { token } = useParams<{ token?: string }>();
   const {
     handleSubmit,
     control,
@@ -30,15 +31,19 @@ const ResetPassword = () => {
     mode: "onChange",
     resolver: yupResolver(schema),
   });
+  const [loading, setLoading] = useState<boolean>(false);
+
   const onsubmit: SubmitHandler<{
     password: string;
     confirmPassword: string;
   }> = async ({ password }) => {
     if (!token) {
-        console.error("Token is undefined");
-        return;
-      }
-    const response = await API.resetPassword(token,{ password });
+      console.error("Token is undefined");
+      return;
+    }
+    setLoading(true);
+    const response = await API.resetPassword(token, { password });
+    setLoading(false);
     if (response?.success) {
       toast.success(response?.message || "Reset Link Sent Successfully");
     } else {
@@ -48,6 +53,7 @@ const ResetPassword = () => {
   return (
     <div className="flex h-screen justify-center items-center bg-background flex-col">
       <ToastContainer />
+      {loading && <Loader />}
       <div className="w-full sm:max-w-md p-12 shadow-md rounded-lg bg-white box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <img

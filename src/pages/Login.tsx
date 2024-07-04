@@ -14,6 +14,8 @@ import CustomTextField from "../components/CustomTextField";
 import { StaggeredLabel } from "../components/StaggerdLabel";
 import { Link } from "react-router-dom";
 import GoogleIcon from "../components/Icons";
+import { useState } from "react";
+import Loader from "../components/Loader";
 
 type SignInData = {
   emailOrPhone: string;
@@ -49,8 +51,10 @@ const Login = () => {
     mode: "onChange",
     resolver: yupResolver(schema),
   });
+const [loading,setLoading]=useState<boolean>(false)
 
   const onSubmit: SubmitHandler<SignInData> = async (data) => {
+    setLoading(true)
     const response = await API.signIn({
       email: data.emailOrPhone,
       phone: data.emailOrPhone,
@@ -60,6 +64,7 @@ const Login = () => {
     if (!response?.success) {
       toast.error(response?.message || "Sign in failed!");
     }
+    setLoading(false)
   };
 
   const login = useGoogleLogin({
@@ -77,6 +82,7 @@ const Login = () => {
   return (
     <div className="flex min-h-screen flex-col justify-center  bg-background">
       <ToastContainer />
+      {loading&& <Loader/>}
       <Grid container>
         <Grid item md={6} className="hidden md:block">
           <img

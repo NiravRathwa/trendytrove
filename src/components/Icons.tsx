@@ -44,10 +44,67 @@ export const SendIcon = () => (
     width="24"
     height="24"
   >
-    <path fill="none" d="M0 0h24v24H0z"/>
+    <path fill="none" d="M0 0h24v24H0z" />
     <path
       fill="currentColor"
       d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"
     />
+  </svg>
+);
+
+export const LoaderIcon = () => (
+  <svg
+    className="pl"
+    width="240"
+    height="240"
+    viewBox="0 0 240 240"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      className="pl__ring pl__ring--a"
+      cx="120"
+      cy="120"
+      r="105"
+      fill="none"
+      stroke="#FF0000"
+      stroke-width="20"
+      stroke-dasharray="0 660"
+      stroke-dashoffset="-330"
+      stroke-linecap="round"
+    ></circle>
+    <circle
+      className="pl__ring pl__ring--b"
+      cx="120"
+      cy="120"
+      r="35"
+      fill="none"
+      stroke="#00FF00"
+      stroke-width="20"
+      stroke-dasharray="0 220"
+      stroke-dashoffset="-110"
+      stroke-linecap="round"
+    ></circle>
+    <circle
+      className="pl__ring pl__ring--c"
+      cx="85"
+      cy="120"
+      r="70"
+      fill="none"
+      stroke="#0000FF"
+      stroke-width="20"
+      stroke-dasharray="0 440"
+      stroke-linecap="round"
+    ></circle>
+    <circle
+      className="pl__ring pl__ring--d"
+      cx="155"
+      cy="120"
+      r="70"
+      fill="none"
+      stroke="#FFFF00"
+      stroke-width="20"
+      stroke-dasharray="0 440"
+      stroke-linecap="round"
+    ></circle>
   </svg>
 );
