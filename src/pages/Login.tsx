@@ -2,7 +2,11 @@ import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import API from "../services/api";
-import { Button, Grid, Typography } from "@mui/material";
+import {
+  Button,
+  Grid,
+  Typography,
+} from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -11,7 +15,11 @@ import { StaggeredLabel } from "../components/StaggerdLabel";
 import { Link } from "react-router-dom";
 import GoogleIcon from "../components/Icons";
 
-type SignInData = { emailOrPhone: string; password: string };
+type SignInData = {
+  emailOrPhone: string;
+  password: string;
+  rememberMe?: boolean;
+};
 
 const emailOrPhone = (value: string | undefined): boolean => {
   if (!value) return false;
@@ -29,6 +37,7 @@ const schema = yup.object().shape({
     .test("emailOrPhone", "Invalid email or phone number", emailOrPhone)
     .required("Email or phone is required"),
   password: yup.string().min(8).required("Password is required"),
+  rememberMe: yup.boolean(),
 });
 
 const Login = () => {
@@ -46,6 +55,7 @@ const Login = () => {
       email: data.emailOrPhone,
       phone: data.emailOrPhone,
       password: data.password,
+      rememberMe: data.rememberMe,
     });
     if (!response?.success) {
       toast.error(response?.message || "Sign in failed!");
@@ -56,15 +66,11 @@ const Login = () => {
     onSuccess: async (response) => {
       const { code } = response;
       const res = await API.googleAuth({ code });
-      if (res?.success) {
-        console.log("Login Success:", res);
-      } else {
-        console.error("Login Failed:");
+      if (!res?.success) {
+        toast.error(res?.message || "Sign in failed!");
       }
     },
-    onError: () => {
-      console.log("Login Failed");
-    },
+
     flow: "auth-code",
   });
 
@@ -133,6 +139,18 @@ const Login = () => {
                     )}
                   />
                 </Grid>
+                <Grid item xs={12} className="flex justify-end">
+                  <Link to="/forgot-password">
+                    <Typography
+                      className="text-primary cursor-pointer underline decoration-primary"
+                      variant="caption"
+                      display="block"
+                      gutterBottom
+                    >
+                      Forgot Password?
+                    </Typography>
+                  </Link>
+                </Grid>
                 <Grid item xs={12}>
                   <Button
                     type="submit"
@@ -147,7 +165,7 @@ const Login = () => {
               </Grid>
             </form>
             <Typography
-              className="text-blac  pt-4"
+              className="pt-4"
               variant="caption"
               display="block"
               gutterBottom

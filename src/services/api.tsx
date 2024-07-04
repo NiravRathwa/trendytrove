@@ -45,8 +45,9 @@ const makeRequest = async (
 const API = {
   signUp: (data: object) => makeRequest("/auth/signup", "post", data),
   signIn: (data: object) => makeRequest("/auth/signin", "post", data),
-  googleAuth: (data: object) =>
-    makeRequest("/auth/google-auth", "post", data),
+  googleAuth: (data: object) => makeRequest("/auth/google-auth", "post", data),
+  forgotPassword: (data: object) =>
+    makeRequest("/auth/forgot-password", "post", data),
   getProducts: () => makeRequest("/products", "get"),
   updateProduct: (id: string, data: object) =>
     makeRequest(`/products/${id}`, "patch", data),
