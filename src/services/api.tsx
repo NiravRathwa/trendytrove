@@ -48,6 +48,7 @@ const API = {
   googleAuth: (data: object) => makeRequest("/auth/google-auth", "post", data),
   forgotPassword: (data: object) =>
     makeRequest("/auth/forgot-password", "post", data),
+  resetPassword: (token: string, data: object) => makeRequest(`/auth/reset-password/${token}`, "post", data),
   getProducts: () => makeRequest("/products", "get"),
   updateProduct: (id: string, data: object) =>
     makeRequest(`/products/${id}`, "patch", data),
