@@ -3,7 +3,7 @@ import "./Loader.css";
 import { LoaderIcon } from "./Icons";
 const Loader = () => {
   return (
-    <div className="fixed inset-0 flex justify-center items-center z-50 bg-opacity-50 bg-white">
+    <div className="fixed inset-0 flex justify-center items-center z-50 bg-opacity-25 bg-white">
       <LoaderIcon />
     </div>
   );

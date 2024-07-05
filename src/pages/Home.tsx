@@ -1,15 +1,15 @@
-import React from 'react'
-import Loader from '../components/Loader'
+import React from "react";
+import Loader from "../components/Loader";
+import AdminNavbar from "../components/AdminNavbar";
 
-type Props = {}
+type Props = {};
 
 const Home = (props: Props) => {
   return (
     <div>
-      <h1>Home</h1>
-      <Loader/>
+      <AdminNavbar />
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

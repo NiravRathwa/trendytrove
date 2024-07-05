@@ -10,6 +10,7 @@ import API from "../services/api";
 import { toast, ToastContainer } from "react-toastify";
 import Loader from "../components/Loader";
 import { useState } from "react";
+import { useTheme } from '@mui/material/styles';
 
 const schema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -23,10 +24,10 @@ const ForgotPassword = () => {
     mode: "onChange",
     resolver: yupResolver(schema),
   });
-const [loading,setLoading]=useState<boolean>(false)
-
+  const [loading, setLoading] = useState<boolean>(false);
+  const theme = useTheme();
   const onsubmit: SubmitHandler<{ email: string }> = async ({ email }) => {
-    setLoading(true)
+    setLoading(true);
     const response = await API.forgotPassword({ email });
     setLoading(false)
     if (response?.success) {
@@ -38,7 +39,7 @@ const [loading,setLoading]=useState<boolean>(false)
   return (
     <div className="flex h-screen justify-center items-center bg-background flex-col">
       <ToastContainer />
-      {loading&& <Loader/>}
+      {loading && <Loader />}
       <div className=" w-full sm:max-w-md p-12 shadow-md rounded-lg bg-white box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1) ">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <img
