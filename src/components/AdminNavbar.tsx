@@ -24,12 +24,25 @@ import { useState } from "react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import PersonIcon from "@mui/icons-material/Person";
-import WindowIcon from '@mui/icons-material/Window';
+import WindowIcon from "@mui/icons-material/Window";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import AddProductPage from "../pages/product/AddProductPage";
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const drawerWidth = 240;
 const list = [
-  { text: "Dashboard", icon: WindowIcon },
-  { text: "User", icon: PersonIcon },
+  { text: "Dashboard", icon: WindowIcon, options: ["Option 1", "Option 2"] },
+  {
+    text: "User",
+    icon: PersonIcon,
+    options: ["Add User", "Users", "Option C"],
+  },
+  {
+    text: "Product",
+    icon: ShoppingCartIcon,
+    options: ["Add Product", "Products", "Option C"],
+  },
 ];
 
 const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
@@ -84,6 +97,8 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 export default function AdminNavbar() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const [expandedItem, setExpandedItem] = React.useState<number | null>(null);
+  const [selectedOption, setSelectedOption] = React.useState<string | null>(null);
   const [anchorElProfile, setAnchorElProfile] = useState<null | HTMLElement>(
     null
   );
@@ -102,7 +117,17 @@ export default function AdminNavbar() {
   const handleCloseProfileMenu = () => {
     setAnchorElProfile(null);
   };
-
+  const handleListItemClick = (index: number) => {
+    if (expandedItem === index) {
+      setExpandedItem(null);
+    } else {
+      setExpandedItem(index);
+    }
+  };
+  const handleOptionClick = (option: string) => {
+    setSelectedOption(option);
+    setOpen(false);
+  };
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -178,61 +203,50 @@ export default function AdminNavbar() {
         <Divider />
         <List className="bg-background">
           {list.map((item, index) => (
-            <ListItem key={index} disablePadding className="">
-              <ListItemButton>
-                <ListItemIcon>
-                  <item.icon className="text-accent"/>
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {["All mail", "Trash", "Spam"].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
+            <React.Fragment key={index}>
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => handleListItemClick(index)}>
+                  <ListItemIcon>
+                    <item.icon className="text-accent" />
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} />
+                  {expandedItem === index ? (
+                    <ExpandLessIcon />
+                  ) : (
+                    <ExpandMoreIcon />
+                  )}
+                </ListItemButton>
+              </ListItem>
+              {expandedItem === index && (
+                <List>
+                  {item.options.map((option, idx) => (
+                    <ListItem key={idx} disablePadding>
+                      <ListItemButton onClick={() => handleOptionClick(option)}>
+                        <ListItemText primary={option} />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+            </React.Fragment>
           ))}
         </List>
       </Drawer>
       <Main open={open}>
         <DrawerHeader />
-        <Typography paragraph>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Rhoncus
-          dolor purus non enim praesent elementum facilisis leo vel. Risus at
-          ultrices mi tempus imperdiet. Semper risus in hendrerit gravida rutrum
-          quisque non tellus. Convallis convallis tellus id interdum velit
-          laoreet id donec ultrices. Odio morbi quis commodo odio aenean sed
-          adipiscing. Amet nisl suscipit adipiscing bibendum est ultricies
-          integer quis. Cursus euismod quis viverra nibh cras. Metus vulputate
-          eu scelerisque felis imperdiet proin fermentum leo. Mauris commodo
-          quis imperdiet massa tincidunt. Cras tincidunt lobortis feugiat
-          vivamus at augue. At augue eget arcu dictum varius duis at consectetur
-          lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa sapien
-          faucibus et molestie ac.
-        </Typography>
-        <Typography paragraph>
-          Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
-          ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
-          elementum integer enim neque volutpat ac tincidunt. Ornare suspendisse
-          sed nisi lacus sed viverra tellus. Purus sit amet volutpat consequat
-          mauris. Elementum eu facilisis sed odio morbi. Euismod lacinia at quis
-          risus sed vulputate odio. Morbi tincidunt ornare massa eget egestas
-          purus viverra accumsan in. In hendrerit gravida rutrum quisque non
-          tellus orci ac. Pellentesque nec nam aliquam sem et tortor. Habitant
-          morbi tristique senectus et. Adipiscing elit duis tristique
-          sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-          eleifend. Commodo viverra maecenas accumsan lacus vel facilisis. Nulla
-          posuere sollicitudin aliquam ultrices sagittis orci a.
-        </Typography>
+        {selectedOption === "Add Product" && (
+          <AddProductPage/>
+        )}
+        {selectedOption === "Products" && (
+          <Typography paragraph>
+            Content for Option B
+          </Typography>
+        )}
+        {selectedOption === null && (
+          <Typography paragraph>
+            Default content when no option is selected
+          </Typography>
+        )}
       </Main>
     </Box>
   );
