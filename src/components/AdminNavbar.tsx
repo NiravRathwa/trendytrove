@@ -29,6 +29,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import AddProductPage from "../pages/product/AddProductPage";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ProductsPage from "../pages/product/ProductsPage";
 
 const drawerWidth = 240;
 const list = [
@@ -232,15 +233,15 @@ export default function AdminNavbar() {
           ))}
         </List>
       </Drawer>
-      <Main open={open}>
+      <Main open={open} className="bg-background h-screen">
         <DrawerHeader />
         {selectedOption === "Add Product" && (
-          <AddProductPage/>
+          <AddProductPage />
         )}
         {selectedOption === "Products" && (
-          <Typography paragraph>
-            Content for Option B
-          </Typography>
+            <ProductsPage/>
+          // <div>123d</div>
+
         )}
         {selectedOption === null && (
           <Typography paragraph>
