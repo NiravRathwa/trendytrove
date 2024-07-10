@@ -13,6 +13,7 @@ import {
   Box,
   Menu,
   MenuItem,
+  useMediaQuery,
 } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -30,6 +31,8 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import AddProductPage from "../pages/product/AddProductPage";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ProductsPage from "../pages/product/ProductsPage";
+import ProductsTable from "../pages/product/ProductsTable"; // Assuming your ProductsTable component is imported
+import UserPage from "pages/users/UserPage";
 
 const drawerWidth = 240;
 const list = [
@@ -57,12 +60,17 @@ const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
   }),
   marginLeft: `-${drawerWidth}px`,
   ...(open && {
+    width: `calc(100% - ${drawerWidth}px)`,
     transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
     marginLeft: 0,
   }),
+  [theme.breakpoints.down("sm")]: {
+    marginLeft: 0,
+    width: "100%", // Ensure full width on smaller screens
+  },
 }));
 
 interface AppBarProps extends MuiAppBarProps {
@@ -90,13 +98,13 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
   ...theme.mixins.toolbar,
   justifyContent: "flex-end",
 }));
 
 export default function AdminNavbar() {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [open, setOpen] = React.useState(false);
   const [expandedItem, setExpandedItem] = React.useState<number | null>(null);
   const [selectedOption, setSelectedOption] = React.useState<string | null>(null);
@@ -111,6 +119,7 @@ export default function AdminNavbar() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
+
   const handleOpenProfileMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElProfile(event.currentTarget);
   };
@@ -118,6 +127,7 @@ export default function AdminNavbar() {
   const handleCloseProfileMenu = () => {
     setAnchorElProfile(null);
   };
+
   const handleListItemClick = (index: number) => {
     if (expandedItem === index) {
       setExpandedItem(null);
@@ -125,6 +135,7 @@ export default function AdminNavbar() {
       setExpandedItem(index);
     }
   };
+
   const handleOptionClick = (option: string) => {
     setSelectedOption(option);
     setOpen(false);
@@ -132,7 +143,7 @@ export default function AdminNavbar() {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open} className="">
+      <AppBar position="fixed" open={open}>
         <Toolbar className="flex justify-between">
           <Box className="flex items-center">
             <IconButton
@@ -145,7 +156,6 @@ export default function AdminNavbar() {
               <MenuIcon />
             </IconButton>
           </Box>
-
           <Box className="flex items-center">
             <IconButton size="large" color="inherit">
               <NotificationsIcon />
@@ -188,7 +198,7 @@ export default function AdminNavbar() {
             boxSizing: "border-box",
           },
         }}
-        variant="persistent"
+        variant={isMobile ? "temporary" : "persistent"}
         anchor="left"
         open={open}
       >
@@ -235,13 +245,14 @@ export default function AdminNavbar() {
       </Drawer>
       <Main open={open} className="bg-background h-screen">
         <DrawerHeader />
+        {selectedOption === "Users" && (
+          <UserPage />
+        )}
         {selectedOption === "Add Product" && (
           <AddProductPage />
         )}
         {selectedOption === "Products" && (
-            <ProductsPage/>
-          // <div>123d</div>
-
+          <ProductsPage />
         )}
         {selectedOption === null && (
           <Typography paragraph>

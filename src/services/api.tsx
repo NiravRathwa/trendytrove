@@ -50,6 +50,7 @@ const API = {
     makeRequest("/auth/forgot-password", "post", data),
   resetPassword: (token: string, data: object) => makeRequest(`/auth/reset-password/${token}`, "post", data),
   getProducts: () => makeRequest("/products", "get"),
+  getUsers: () => makeRequest("/userdetails", "get"),
   updateProduct: (id: string, data: object) =>
     makeRequest(`/products/${id}`, "patch", data),
   deleteProduct: (id: string) => makeRequest(`/products/${id}`, "delete"),
