@@ -32,7 +32,7 @@ const ProductsTable: React.FC = () => {
       setLoading(true)
       const res = await API.getProducts();
       setLoading(false)
-      if (res.status) {
+      if (res?.status) {
         setProducts(res.data.products);
       }
     };

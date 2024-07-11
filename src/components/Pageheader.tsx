@@ -1,13 +1,12 @@
 
 import React, { ChangeEvent } from "react";
 import {
-  Button,
   Grid,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CustomSearch from "./customSearch";
 import { StaggeredLabel } from "./StaggerdLabel";
-
+import CustomButton from "./CustomButton";
 interface PageHeaderProps {
   onSearch: (value: string) => void;
   onAdd: () => void;
@@ -31,9 +30,9 @@ const PageHeader: React.FC<PageHeaderProps> = ({  onSearch, onAdd }) => {
       <Grid item sm={4} />
 
       <Grid item xs={12} sm={2} onClick={onAdd}>
-        <Button variant="contained" fullWidth startIcon={<AddIcon />}>
+        <CustomButton variant="contained" fullWidth startIcon={<AddIcon />}>
           Add
-        </Button>
+        </CustomButton>
       </Grid>
       
     </Grid>
