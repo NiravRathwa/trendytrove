@@ -220,6 +220,82 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
     colors: { error: false, message: "" },
     images: { error: false, message: "" },
   });
+  useEffect(() => {
+    const timers: NodeJS.Timeout[] = [];
+
+    Object.keys(errors).forEach((field) => {
+      if (errors[field].error) {
+        const timer = setTimeout(() => {
+          setErrors((prevErrors: any) => ({
+            ...prevErrors,
+            [field]: { error: false, message: "" },
+          }));
+        }, 3000); 
+        timers.push(timer);
+      }
+    });
+
+    return () => {
+      timers.forEach(clearTimeout);
+    };
+  }, [errors]);
+
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = {
+      name: { error: false, message: "" },
+      description: { error: false, message: "" },
+      category: { error: false, message: "" },
+      price: { error: false, message: "" },
+      stock: { error: false, message: "" },
+      sizes: { error: false, message: "" },
+      colors: { error: false, message: "" },
+      images: { error: false, message: "" },
+    };
+
+    if (!formData.name.trim()) {
+      newErrors.name = { error: true, message: "Name is required" };
+      valid = false;
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = { error: true, message: "Description is required" };
+      valid = false;
+    }
+
+    if (category.length < 1) {
+      newErrors.category = { error: true, message: "Category is required" };
+      valid = false;
+    }
+
+    if (!formData.price || parseInt(formData.price) <= 0) {
+      newErrors.price = { error: true, message: "Price must be a positive number" };
+      valid = false;
+    }
+
+    if (!formData.stock || parseInt(formData.stock) <= 0 || !Number.isInteger(Number(formData.stock))) {
+      newErrors.stock = { error: true, message: "Stock must be a positive integer" };
+      valid = false;
+    }
+
+    if (sizes.length < 1) {
+      newErrors.sizes = { error: true, message: "Please select at least one size" };
+      valid = false;
+    }
+
+    if (colors.length < 1) {
+      newErrors.colors = { error: true, message: "Please select at least one color" };
+      valid = false;
+    }
+
+    if (images.length < 1) {
+      newErrors.images = { error: true, message: "Please upload at least one image" };
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
@@ -231,7 +307,10 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
   
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-   console.log(formData,category,sizes,colors,images)
+    if (validateForm()) {
+      console.log("Form submitted", formData, category, sizes, colors, images);
+      // Perform form submission here
+    }
 
    
   };
