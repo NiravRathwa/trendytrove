@@ -1,4 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
 
 interface UserState {
   user: any;
@@ -14,11 +16,11 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<any>) => {
+    setUser(state, action: PayloadAction<any>) {
       state.user = action.payload.user;
       state.token = action.payload.token;
     },
-    clearUser: (state) => {
+    clearUser(state) {
       state.user = null;
       state.token = null;
     },
@@ -26,4 +28,12 @@ const userSlice = createSlice({
 });
 
 export const { setUser, clearUser } = userSlice.actions;
-export default userSlice.reducer;
+
+const persistConfig = {
+  key: 'user',
+  storage,
+};
+
+const persistedUserReducer = persistReducer(persistConfig, userSlice.reducer);
+
+export default persistedUserReducer;
