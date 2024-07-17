@@ -42,8 +42,30 @@ const apiSlice = createApi({
     resetPassword: builder.mutation({
       query: ({ token, data }) => ({
         url: `/auth/reset-password/${token}`,
-        method: 'POST',
+        method: "POST",
         body: data,
+      }),
+    }),
+    getProducts: builder.query({
+      query: () => ({
+        url: "/products",
+        method: "GET",
+      }),
+    }),
+    AddProduct: builder.mutation({
+      query: (data) => ({
+        url: "/products",
+        method: "POST",
+        body: data,
+        credentials: "include",
+      }),
+    }),
+    editProduct: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/products/${id}`,
+        method: "PATCH",
+        body: data,
+        credentials: "include",
       }),
     }),
   }),
@@ -55,5 +77,8 @@ export const {
   useSignUpMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useGetProductsQuery,
+  useAddProductMutation,
+  useEditProductMutation
 } = apiSlice;
 export default apiSlice;

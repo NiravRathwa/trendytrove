@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -7,16 +7,16 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
   IconButton,
-  Icon,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import API from "services/api";
 import { useTheme } from "@mui/material/styles";
+import { useGetProductsQuery } from "store/apiSlice";
 import TablePagination from "@mui/material/TablePagination";
 import Loader from "components/Loader";
+import { toast, ToastContainer } from "react-toastify";
+
 type Product = {
   name: string;
   price: number;
@@ -25,21 +25,12 @@ type Product = {
 
 const ProductsTable: React.FC = () => {
   const theme = useTheme();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading,setLoading]=useState<boolean>(false)
-  useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true)
-      const res = await API.getProducts();
-      setLoading(false)
-      if (res?.status) {
-        setProducts(res.data.products);
-      }
-    };
-    fetchProduct();
-  }, []);
-  const [page, setPage] = React.useState(1);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const { data: products, isLoading } = useGetProductsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
@@ -58,7 +49,8 @@ const ProductsTable: React.FC = () => {
   return (
     <div className="overflow-x-auto my-8">
       <TableContainer component={Paper}>
-        {loading && <Loader/>}
+        <ToastContainer />
+        {isLoading && <Loader />}
         <Table sx={{ minWidth: 350 }} aria-label="Products Table">
           <TableHead>
             <TableRow>
@@ -69,34 +61,37 @@ const ProductsTable: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {products
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((product, index) => (
-                <TableRow key={index}>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>₹{product.price}</TableCell>
-                  <TableCell>{product.stock}</TableCell>
-                  <TableCell
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <IconButton sx={{ color: theme.palette.customText[500] }}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton sx={{ color: theme.palette.customAccent[500] }}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
+            {products?.success &&
+              products?.data?.products
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((product: Product, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>₹{product.price}</TableCell>
+                    <TableCell>{product.stock}</TableCell>
+                    <TableCell
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <IconButton sx={{ color: theme.palette.customText[500] }}>
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        sx={{ color: theme.palette.customAccent[500] }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
         <TablePagination
           component="div"
-          count={products?.length}
+          count={products?.data?.products?.length}
           page={page}
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}

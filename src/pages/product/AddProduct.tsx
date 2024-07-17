@@ -8,19 +8,31 @@ import {
   Input,
 } from "@mui/material";
 import ReactSelect from "react-select";
-import { styled } from "@mui/material/styles";
 import chroma from "chroma-js";
 import CustomTextField from "../../components/CustomTextField";
 import { StaggeredLabel } from "../../components/StaggerdLabel";
 import CloseIcon from "@mui/icons-material/Close";
-import { StylesConfig, GroupBase, OptionProps } from "react-select";
-import * as yup from 'yup';
+import { StylesConfig } from "react-select";
+import { storage } from "../../firebaseConfig";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import Loader from "components/Loader";
+import { toast, ToastContainer } from "react-toastify";
+import {
+  useGetProductsQuery,
+  useEditProductMutation,
+  useAddProductMutation,
+} from "store/apiSlice";
 
 type Size = {
   value: string;
   label: string;
 };
-type Props = { open: boolean; setOpen: (isOpen: boolean) => void };
+type Props = {
+  open: boolean;
+  setOpen: (isOpen: boolean) => void;
+  editData?: any;
+  setEditData?: (data: object | null) => void;
+};
 const predefinedColors = [
   { value: "#FF0000", label: "Red" },
   { value: "#00FF00", label: "Green" },
@@ -197,16 +209,26 @@ const categoryOptions = [
   label: option,
 }));
 
-const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
+const AddProduct: React.FC<Props> = ({
+  open,
+  setOpen,
+  editData,
+  setEditData,
+}) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
     stock: "",
   });
-  const [category, setCategory] = useState<{ value: string; label: string }[]>(
-    []
-  );
+  const [category, setCategory] = useState<{
+    value: string;
+    label: string;
+  } | null>(null);
+
+  const [addProduct] = useAddProductMutation();
+  const [editProduct] = useEditProductMutation();
+  const [loading, setLoading] = useState<boolean>(false);
   const [sizes, setSizes] = useState<Size[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [colors, setColors] = useState<{ value: string; label: string }[]>([]);
@@ -230,7 +252,7 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
             ...prevErrors,
             [field]: { error: false, message: "" },
           }));
-        }, 3000); 
+        }, 3000);
         timers.push(timer);
       }
     });
@@ -239,6 +261,29 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
       timers.forEach(clearTimeout);
     };
   }, [errors]);
+
+  useEffect(() => {
+    if (editData != null) {
+      setFormData({
+        name: editData.name,
+        description: editData.description,
+        price: editData.price,
+        stock: editData.stock,
+      });
+      const sizesArray = editData.sizes.map((size: string) => ({
+        value: size,
+        label: size,
+      }));
+      const colorsArray = editData.colors.map((color: string) => {
+        const foundColor = predefinedColors.find((c) => c.value === color);
+        return foundColor ? foundColor : { value: color, label: color };
+      });
+      setColors(colorsArray);
+      setSizes(sizesArray);
+      setImages(editData.images);
+      setCategory({ value: editData.category, label: editData.category });
+    }
+  }, []);
 
   const validateForm = () => {
     let valid = true;
@@ -259,42 +304,82 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = { error: true, message: "Description is required" };
+      newErrors.description = {
+        error: true,
+        message: "Description is required",
+      };
       valid = false;
     }
 
-    if (category.length < 1) {
+    if (category == null) {
       newErrors.category = { error: true, message: "Category is required" };
       valid = false;
     }
 
     if (!formData.price || parseInt(formData.price) <= 0) {
-      newErrors.price = { error: true, message: "Price must be a positive number" };
+      newErrors.price = {
+        error: true,
+        message: "Price must be a positive number",
+      };
       valid = false;
     }
 
-    if (!formData.stock || parseInt(formData.stock) <= 0 || !Number.isInteger(Number(formData.stock))) {
-      newErrors.stock = { error: true, message: "Stock must be a positive integer" };
+    if (
+      !formData.stock ||
+      parseInt(formData.stock) <= 0 ||
+      !Number.isInteger(Number(formData.stock))
+    ) {
+      newErrors.stock = {
+        error: true,
+        message: "Stock must be a positive integer",
+      };
       valid = false;
     }
 
     if (sizes.length < 1) {
-      newErrors.sizes = { error: true, message: "Please select at least one size" };
+      newErrors.sizes = {
+        error: true,
+        message: "Please select at least one size",
+      };
       valid = false;
     }
 
     if (colors.length < 1) {
-      newErrors.colors = { error: true, message: "Please select at least one color" };
+      newErrors.colors = {
+        error: true,
+        message: "Please select at least one color",
+      };
       valid = false;
     }
 
     if (images.length < 1) {
-      newErrors.images = { error: true, message: "Please upload at least one image" };
+      newErrors.images = {
+        error: true,
+        message: "Please upload at least one image",
+      };
       valid = false;
     }
 
     setErrors(newErrors);
     return valid;
+  };
+  const handleImageUpload = async () => {
+    const uploadPromises = images.map((image) => {
+      const storageRef = ref(storage, `products/${image.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, image);
+      return new Promise<string>((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          null,
+          (error) => reject(error),
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then(resolve).catch(reject);
+          }
+        );
+      });
+    });
+
+    return Promise.all(uploadPromises);
   };
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -302,21 +387,42 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
       setImages(filesArray);
     }
   };
- 
-
-  
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const { refetch } = useGetProductsQuery(undefined);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log("Form submitted", formData, category, sizes, colors, images);
-      // Perform form submission here
-    }
+      try {
+        setLoading(true);
+        const imageUrls = await handleImageUpload();
+        const payload = {
+          name: formData.name,
+          description: formData.description,
+          category: category?.value,
+          price: Number(formData.price),
+          stock: Number(formData.stock),
+          sizes: sizes.map((color) => color.value),
+          images: imageUrls,
+          colors: colors.map((color) => color.value),
+        };
 
-   
+        let response;
+
+        response = editData != null ? await editProduct({id:editData._id,data:payload}) : await addProduct(payload);
+        setLoading(false);
+        handleClose();
+        refetch();
+        toast.success(response?.data?.message);
+      } catch (error) {
+        setLoading(false);
+        handleClose();
+        toast.error("something went wrong, please try again");
+      }
+    }
   };
 
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -341,10 +447,14 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
   };
   const handleClose = () => {
     setOpen(false);
+    if (setEditData) {
+      setEditData(null);
+    }
   };
   return (
     <Modal open={open} onClose={handleClose}>
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        {loading && <Loader />}
         <div className="container mx-auto bg-white p-6 rounded-lg w-4/5 sm:w-full">
           <DialogTitle
             id="modal-modal-title"
@@ -367,7 +477,10 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
               <CloseIcon />
             </IconButton>
           </DialogTitle>
-          <form onSubmit={handleSubmit} className="space-y-4 overflow-auto max-h-96">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 overflow-auto max-h-96"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <CustomTextField
                 label={<StaggeredLabel text="Product Name" />}
@@ -385,12 +498,22 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
                 <ReactSelect
                   options={categoryOptions}
                   value={category}
-                  onChange={(selectedOptions) => handleSelectChange("category", selectedOptions)}
+                  onChange={(selectedOptions) =>
+                    handleSelectChange("category", selectedOptions)
+                  }
                   className="z-50"
                   styles={customStyles}
                 />
                 {errors.category.error && (
-                  <Typography variant="body2"  sx={{margin:"4px 14px 0px 14px",color:"var(--accent-500)",fontSize:"0.75rem",fontWeight:400}}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      margin: "4px 14px 0px 14px",
+                      color: "var(--accent-500)",
+                      fontSize: "0.75rem",
+                      fontWeight: 400,
+                    }}
+                  >
                     {errors.category.message}
                   </Typography>
                 )}
@@ -405,7 +528,6 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
-
                 error={errors.price.error}
                 helperText={errors.price.message}
               />
@@ -421,20 +543,29 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
                 onChange={handleChange}
                 error={errors.stock.error}
                 helperText={errors.stock.message}
-               
               />
               <div>
                 <ReactSelect
                   isMulti
                   options={Sizes}
                   value={sizes}
-                  onChange={(selectedOptions) => handleSelectChange("sizes", selectedOptions)}
+                  onChange={(selectedOptions) =>
+                    handleSelectChange("sizes", selectedOptions)
+                  }
                   className="basic-multi-select z-40"
                   classNamePrefix="select"
                   styles={customStyles}
                 />
                 {errors.sizes.error && (
-                  <Typography variant="body2"  sx={{margin:"4px 14px 0px 14px",color:"var(--accent-500)",fontSize:"0.75rem",fontWeight:400}}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      margin: "4px 14px 0px 14px",
+                      color: "var(--accent-500)",
+                      fontSize: "0.75rem",
+                      fontWeight: 400,
+                    }}
+                  >
                     {errors.sizes.message}
                   </Typography>
                 )}
@@ -444,13 +575,23 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
                   isMulti
                   options={predefinedColors}
                   value={colors}
-                  onChange={(selectedOptions) => handleSelectChange("colors", selectedOptions)}
+                  onChange={(selectedOptions) =>
+                    handleSelectChange("colors", selectedOptions)
+                  }
                   className="basic-multi-select z-30"
                   classNamePrefix="select Colors"
                   styles={colourStyles}
                 />
                 {errors.colors.error && (
-                  <Typography variant="body2"  sx={{margin:"4px 14px 0px 14px",color:"var(--accent-500)",fontSize:"0.75rem",fontWeight:400}}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      margin: "4px 14px 0px 14px",
+                      color: "var(--accent-500)",
+                      fontSize: "0.75rem",
+                      fontWeight: 400,
+                    }}
+                  >
                     {errors.colors.message}
                   </Typography>
                 )}
@@ -486,7 +627,15 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
                     </Button>
                   </label>
                   {errors.images.error && (
-                    <Typography variant="body2"  sx={{margin:"4px 14px 0px 14px",color:"var(--accent-500)",fontSize:"0.75rem",fontWeight:400}}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        margin: "4px 14px 0px 14px",
+                        color: "var(--accent-500)",
+                        fontSize: "0.75rem",
+                        fontWeight: 400,
+                      }}
+                    >
                       {errors.images.message}
                     </Typography>
                   )}
@@ -503,7 +652,11 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
                     {images.map((image, index) => (
                       <img
                         key={index}
-                        src={URL.createObjectURL(image)}
+                        src={
+                          typeof image === "string"
+                            ? image
+                            : URL.createObjectURL(image)
+                        }
                         alt={`Product Image ${index + 1}`}
                         className="w-24 h-24 object-cover rounded-lg mr-2 mb-2"
                       />
@@ -525,7 +678,7 @@ const AddProduct: React.FC<Props> = ({ open, setOpen }) => {
                 },
               }}
             >
-              Add Product
+              {editData!=null?"Edit Product":"Add Product"}
             </Button>
           </form>
         </div>
