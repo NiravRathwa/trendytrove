@@ -3,14 +3,13 @@ import * as yup from "yup";
 import { Link } from "react-router-dom";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Button, Typography, Box } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 import { StaggeredLabel } from "../components/StaggerdLabel";
 import { SendIcon } from "../components/Icons";
-import API from "../services/api";
 import { toast, ToastContainer } from "react-toastify";
 import Loader from "../components/Loader";
-import { useState } from "react";
-import { useTheme } from '@mui/material/styles';
+import { useForgotPasswordMutation } from "store/apiSlice";
+import CustomButton from "components/CustomButton";
 
 const schema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -24,16 +23,15 @@ const ForgotPassword = () => {
     mode: "onChange",
     resolver: yupResolver(schema),
   });
-  const [loading, setLoading] = useState<boolean>(false);
-  const theme = useTheme();
+  const [forgotPassword, { isLoading: loading }] = useForgotPasswordMutation();
   const onsubmit: SubmitHandler<{ email: string }> = async ({ email }) => {
-    setLoading(true);
-    const response = await API.forgotPassword({ email });
-    setLoading(false)
-    if (response?.success) {
-      toast.success(response?.message || "Reset Link Sent Successfully");
-    } else {
-      toast.error(response?.message || "something went wrong!");
+    try {
+      const response = await forgotPassword({ email }).unwrap();
+      if (response?.success) {
+        toast.success(response?.message || "Reset Link Sent Successfully");
+      }
+    } catch (error:any) {
+      toast.error(error?.data?.message || "something went wrong!");
     }
   };
   return (
@@ -75,7 +73,7 @@ const ForgotPassword = () => {
             name="email"
           />
           <Box display="flex" justifyContent="center" mt={2}>
-            <Button
+            <CustomButton
               fullWidth
               variant="contained"
               type="submit"
@@ -85,7 +83,7 @@ const ForgotPassword = () => {
                   style={{
                     borderRadius: "50%",
                     backgroundColor: "rgba(255, 255, 255, 0.2)",
-                    transition: "all 0.5s ease",
+                    transition: "all 0.3s ease",
                   }}
                 >
                   <SendIcon />
@@ -93,7 +91,6 @@ const ForgotPassword = () => {
               }
               sx={{
                 cursor: isValid ? "pointer" : "not-allowed",
-                backgroundColor: "#ab3fc6",
                 marginBottom: "16px",
                 "& .MuiButton-startIcon svg": {
                   fill: "white",
@@ -102,7 +99,6 @@ const ForgotPassword = () => {
                   transition: "all 0.3s ease-out",
                 },
                 "&:hover": {
-                  backgroundColor: "#b74ad3",
                   "& .MuiButton-startIcon svg": {
                     transform: isValid ? "rotate(45deg)" : "rotate(0)",
                     transition: "all 0.3s ease-in",
@@ -111,7 +107,7 @@ const ForgotPassword = () => {
               }}
             >
               Send Link
-            </Button>
+            </CustomButton>
           </Box>
 
           <Typography variant="body2" className="text-text text-center mt-2">

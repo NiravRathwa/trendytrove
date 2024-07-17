@@ -2,21 +2,18 @@ import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import API from "../services/api";
-import {
-  Button,
-  Grid,
-  Typography,
-} from "@mui/material";
+import { Button, Grid, Typography } from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useGoogleLogin } from "@react-oauth/google";
 import CustomTextField from "../components/CustomTextField";
 import { StaggeredLabel } from "../components/StaggerdLabel";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import GoogleIcon from "../components/Icons";
-import { useState } from "react";
 import Loader from "../components/Loader";
-
+import { useSignInMutation, useGoogleAuthMutation } from "../store/apiSlice";
+import { useDispatch } from "react-redux";
+import { setUser } from "../store/userSlice";
 type SignInData = {
   emailOrPhone: string;
   password: string;
@@ -51,38 +48,49 @@ const Login = () => {
     mode: "onChange",
     resolver: yupResolver(schema),
   });
-const [loading,setLoading]=useState<boolean>(false)
-
+  const [signIn, { isLoading: signInLoading }] = useSignInMutation();
+  const [googleAuth, { isLoading: googleLoading }] = useGoogleAuthMutation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const onSubmit: SubmitHandler<SignInData> = async (data) => {
-    setLoading(true)
-    const response = await API.signIn({
-      email: data.emailOrPhone,
-      phone: data.emailOrPhone,
-      password: data.password,
-      rememberMe: data.rememberMe,
-    });
-    if (!response?.success) {
-      toast.error(response?.message || "Sign in failed!");
+    try {
+      const isEmail =
+        emailOrPhone(data.emailOrPhone) &&
+        yup.string().email().isValidSync(data.emailOrPhone);
+      const requestData = isEmail
+        ? { email: data.emailOrPhone, password: data.password }
+        : { phone: data.emailOrPhone, password: data.password };
+
+      const response = await signIn(requestData).unwrap();
+      if (response?.success) {
+        dispatch(setUser({ user: response.data.user }));
+        navigate("/");
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Sign in failed!");
     }
-    setLoading(false)
   };
 
   const login = useGoogleLogin({
     onSuccess: async (response) => {
       const { code } = response;
-      const res = await API.googleAuth({ code });
-      if (!res?.success) {
-        toast.error(res?.message || "Sign in failed!");
+      try {
+        const response = await googleAuth({ code }).unwrap();
+        if (response?.success) {
+          dispatch(setUser({ user: response.data.user }));
+          navigate("/");
+        }
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Sign in failed!");
       }
     },
-
     flow: "auth-code",
   });
 
   return (
     <div className="flex min-h-screen flex-col justify-center  bg-background">
       <ToastContainer />
-      {loading&& <Loader/>}
+      {(signInLoading || googleLoading) && <Loader />}
       <Grid container>
         <Grid item md={6} className="hidden md:block">
           <img

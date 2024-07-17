@@ -5,10 +5,10 @@ import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Button, Typography, Box } from "@mui/material";
 import { StaggeredLabel } from "../components/StaggerdLabel";
-import API from "../services/api";
 import { toast, ToastContainer } from "react-toastify";
-import { useState } from "react";
 import Loader from "../components/Loader";
+import { useNavigate } from "react-router-dom";
+import { useResetPasswordMutation } from "store/apiSlice";
 
 const schema = yup.object().shape({
   password: yup
@@ -31,8 +31,9 @@ const ResetPassword = () => {
     mode: "onChange",
     resolver: yupResolver(schema),
   });
-  const [loading, setLoading] = useState<boolean>(false);
-
+  const [resetPassword, { isLoading: loading }] = useResetPasswordMutation();
+  const navigate = useNavigate();
+  
   const onsubmit: SubmitHandler<{
     password: string;
     confirmPassword: string;
@@ -41,13 +42,16 @@ const ResetPassword = () => {
       console.error("Token is undefined");
       return;
     }
-    setLoading(true);
-    const response = await API.resetPassword(token, { password });
-    setLoading(false);
-    if (response?.success) {
-      toast.success(response?.message || "Reset Link Sent Successfully");
-    } else {
-      toast.error(response?.message || "something went wrong!");
+    try {
+      const response = await resetPassword({
+        token,
+        data: { password },
+      }).unwrap();
+      if (response?.success) {
+        navigate("/login");
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "something went wrong!");
     }
   };
   return (

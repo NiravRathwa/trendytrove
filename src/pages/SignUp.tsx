@@ -1,18 +1,18 @@
-import React from "react";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import API from "../services/api";
-import {  Button, Grid, Typography } from "@mui/material";
+import { Button, Grid, Typography } from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useGoogleLogin } from "@react-oauth/google";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { StaggeredLabel } from "../components/StaggerdLabel";
 import CustomTextField from "../components/CustomTextField";
 import GoogleIcon from "../components/Icons";
-import { useState } from "react";
 import Loader from "../components/Loader";
+import { useSignUpMutation, useGoogleAuthMutation } from "../store/apiSlice";
+import { useDispatch } from "react-redux";
+import { setUser } from "../store/userSlice";
 
 type SignInData = { email: string; mobileNo: string; password: string };
 
@@ -32,38 +32,44 @@ const SignUp = () => {
   const {
     handleSubmit,
     control,
-    formState: { errors ,isValid,},
+    formState: { errors, isValid },
   } = useForm<SignInData>({
     mode: "onChange",
     resolver: yupResolver(schema),
   });
-const [loading,setLoading]=useState<boolean>(false)
+  const [signUp, { isLoading: signInLoading }] = useSignUpMutation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [googleAuth, { isLoading: googleLoading }] = useGoogleAuthMutation();
 
   const onSubmit: SubmitHandler<SignInData> = async (data) => {
-
-    setLoading(true)
-    const response = await API.signUp({
+    try{
+    const response = await signUp({
       email: data.email,
       phone: data.mobileNo,
       password: data.password,
-    });
-    setLoading(false)
-    if (!response?.success) {
-      toast.error(response?.message || "Sign in failed!");
+    }).unwrap();
+    if (response?.success) {
+      dispatch(setUser({ user: response.data.user }));
+      navigate("/");
     }
+  } catch (error: any) {
+    toast.error(error?.data?.message || "Sign up failed!");
+  }
   };
+
   const login = useGoogleLogin({
     onSuccess: async (response) => {
       const { code } = response;
-      const res = await API.googleAuth({ code });
-      if (res?.success) {
-        console.log("Login Success:", res);
-      } else {
-        console.error("Login Failed:");
+      try {
+        const response = await googleAuth({ code }).unwrap();
+        if (response?.success) {
+          dispatch(setUser({ user: response.data.user }));
+          navigate("/");
+        }
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Sign up failed!");
       }
-    },
-    onError: () => {
-      console.log("Login Failed");
     },
     flow: "auth-code",
   });
@@ -71,7 +77,7 @@ const [loading,setLoading]=useState<boolean>(false)
   return (
     <div className="flex min-h-screen flex-col justify-center bg-background ">
       <ToastContainer />
-      {loading&& <Loader/>}
+      {(signInLoading || googleLoading) && <Loader />}
       <Grid container>
         <Grid item md={6} className="hidden md:block">
           <img
@@ -155,11 +161,11 @@ const [loading,setLoading]=useState<boolean>(false)
                 </Grid>
                 <Grid item xs={12}>
                   <Button
-                   type="submit"
+                    type="submit"
                     className="!bg-primary"
                     variant="contained"
                     fullWidth
-                    sx={{cursor:isValid?"pointer":"not-allowed"}}
+                    sx={{ cursor: isValid ? "pointer" : "not-allowed" }}
                   >
                     Create account
                   </Button>
