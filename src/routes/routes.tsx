@@ -11,6 +11,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
 import Home from "../pages/Home";
+import ProductList from "pages/products/ProductList";
 const AppRoutes: React.FC = () => {
   const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID as string;
   return (
@@ -22,6 +23,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/" element={<Home />} />
+        <Route path="/products" element={<ProductList />} />
 
         {/* <Route path="/about" element={<About />} /> */}
         {/* <Route path="/contact" element={<Contact />} /> */}
