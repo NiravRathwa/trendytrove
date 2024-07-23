@@ -19,8 +19,6 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ListItem from "@mui/material/ListItem";
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import MailIcon from "@mui/icons-material/Mail";
 import { useState } from "react";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircle from "@mui/icons-material/AccountCircle";
@@ -31,9 +29,9 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import AddProductPage from "../pages/product/AddProductPage";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ProductsPage from "../pages/product/ProductsPage";
-import ProductsTable from "../pages/product/ProductsTable"; // Assuming your ProductsTable component is imported
 import UserPage from "pages/users/UserPage";
-
+import { RootState } from '../store/store';
+import { useSelector } from "react-redux";
 const drawerWidth = 240;
 const list = [
   { text: "Dashboard", icon: WindowIcon, options: ["Option 1", "Option 2"] },
@@ -111,7 +109,7 @@ export default function AdminNavbar() {
   const [anchorElProfile, setAnchorElProfile] = useState<null | HTMLElement>(
     null
   );
-
+  const user = useSelector((state: RootState) => state.user.user);
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -143,7 +141,7 @@ export default function AdminNavbar() {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
+      <AppBar position="fixed" open={open} sx={{backgroundColor:"var(--primary)"}}>
         <Toolbar className="flex justify-between">
           <Box className="flex items-center">
             <IconButton
@@ -189,7 +187,7 @@ export default function AdminNavbar() {
           </Box>
         </Toolbar>
       </AppBar>
-      <Drawer
+      {user?.role==="admin"&&<Drawer
         sx={{
           width: drawerWidth,
           flexShrink: 0,
@@ -243,7 +241,8 @@ export default function AdminNavbar() {
           ))}
         </List>
       </Drawer>
-      <Main open={open} className="bg-background h-screen">
+}
+            <Main open={open} className="bg-background h-screen">
         <DrawerHeader />
         {selectedOption === "Users" && (
           <UserPage />

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { MouseEventHandler, useEffect, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -16,6 +16,7 @@ import { useGetProductsQuery } from "store/apiSlice";
 import TablePagination from "@mui/material/TablePagination";
 import Loader from "components/Loader";
 import { toast, ToastContainer } from "react-toastify";
+import AddProduct from "./AddProduct";
 
 type Product = {
   name: string;
@@ -28,7 +29,8 @@ const ProductsTable: React.FC = () => {
   const { data: products, isLoading } = useGetProductsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
-
+  const [open, setOpen] = useState<boolean>(false);
+  const [editData, setEditData] = useState(null);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
@@ -45,11 +47,17 @@ const ProductsTable: React.FC = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
+  const handleEdit = (product: any) => (event: any) => {
+    setOpen(true);
+    setEditData(product);
+  };
   return (
     <div className="overflow-x-auto my-8">
       <TableContainer component={Paper}>
         <ToastContainer />
+        {open && (
+          <AddProduct open={open} setOpen={setOpen} editData={editData} />
+        )}
         {isLoading && <Loader />}
         <Table sx={{ minWidth: 350 }} aria-label="Products Table">
           <TableHead>
@@ -76,7 +84,10 @@ const ProductsTable: React.FC = () => {
                         alignItems: "center",
                       }}
                     >
-                      <IconButton sx={{ color: theme.palette.customText[500] }}>
+                      <IconButton
+                        sx={{ color: theme.palette.customText[500] }}
+                        onClick={handleEdit(product)}
+                      >
                         <EditIcon />
                       </IconButton>
                       <IconButton
