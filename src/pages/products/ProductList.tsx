@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -22,6 +22,9 @@ import ProductCard from "components/ProductCard";
 import { motion } from "framer-motion";
 import FilterComponent from "components/FilterComponent";
 import { useGetProductsQuery } from "store/apiSlice";
+import { Link } from "react-router-dom";
+import { setProducts } from "store/productsSlice";
+import { useDispatch } from "react-redux";
 
 interface Category {
   name: string;
@@ -120,6 +123,12 @@ const ProductList: React.FC<Props> = () => {
   const { data: products, isLoading } = useGetProductsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
+  const dispatch = useDispatch();
+  useEffect(() => {
+    if (products) {
+      dispatch(setProducts(products?.data?.products));
+    }
+  }, [products, dispatch]);
   const variants = {
     open: {
       y: 0,
@@ -136,8 +145,6 @@ const ProductList: React.FC<Props> = () => {
       },
     },
   };
-
-  const colors = ["#FF008C", "#D309E1", "#9C1AFF", "#7700FF", "#4400FF"];
 
   return (
     <div className="bg-white">
@@ -172,6 +179,7 @@ const ProductList: React.FC<Props> = () => {
             </List>
             {filters.map((section) => (
               <FilterComponent
+                key={section.id}
                 section={section}
                 openFilter={openFilter}
                 handleFilterToggle={handleFilterToggle}
@@ -229,7 +237,7 @@ const ProductList: React.FC<Props> = () => {
                       <Typography
                         variant="body2"
                         // color={option.current ? "textPrimary" : "textSecondary"}
-                        style={{ color: `2px solid ${colors[i]}` }}
+                        // style={{ color: `2px solid ${colors[i]}` }}
                       >
                         {option.name}
                       </Typography>
@@ -261,155 +269,56 @@ const ProductList: React.FC<Props> = () => {
             </div>
           </div>
 
-          <section aria-labelledby="products-heading" className="pb-24 pt-6">
-            <Grid container spacing={4}>
-              {!isMobile && (
-                <Grid item xs={12} md={3}>
-                  <div>
-                    <List
-                      component="nav"
-                      subheader={
-                        <ListSubheader component="div">
-                          Categories
-                        </ListSubheader>
-                      }
-                    >
-                      {subCategories.map((category) => (
-                        <ListItem key={category.name}>
-                          <ListItemText primary={category.name} />
-                        </ListItem>
-                      ))}
-                    </List>
-
-                    {filters.map((section) => (
-                      <FilterComponent
-                        section={section}
-                        openFilter={openFilter}
-                        handleFilterToggle={handleFilterToggle}
-                      />
+          <Grid container spacing={4}>
+            {!isMobile && (
+              <Grid item xs={12} md={3}>
+                <div>
+                  <List
+                    component="nav"
+                    subheader={
+                      <ListSubheader component="div">Categories</ListSubheader>
+                    }
+                  >
+                    {subCategories.map((category) => (
+                      <ListItem key={category.name}>
+                        <ListItemText primary={category.name} />
+                      </ListItem>
                     ))}
-                  </div>
-                </Grid>
-              )}
-              <Grid item xs={12} md={9}>
-                <div className="flex flex-wrap justify-center gap-4 p-4">
-               
-                    {products?.success &&
-                      products?.data?.products.map((product: any) => (
-                        <ProductCard
-                          key={product._id}
-                          image={product.images[0]}
-                          productName={product.name}
-                          price={product.price}
-                          discount={20}
-                        />
-                      ))}
-                  <ProductCard
-                    image="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNsb3RoZXN8ZW58MHx8MHx8fDA%3D"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />
-                  <ProductCard
-                    image="https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-02.jpg"
-                    productName="Sample Product"
-                    price="100"
-                    discount={90}
-                  />
-                  <ProductCard
-                    image="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNsb3RoZXN8ZW58MHx8MHx8fDA%3D"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />{" "}
-                  <ProductCard
-                    image="https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-02.jpg"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />
-                  <ProductCard
-                    image="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNsb3RoZXN8ZW58MHx8MHx8fDA%3D"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />{" "}
-                  <ProductCard
-                    image="https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-02.jpg"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />
-                  <ProductCard
-                    image="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNsb3RoZXN8ZW58MHx8MHx8fDA%3D"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />{" "}
-                  <ProductCard
-                    image="https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-02.jpg"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />
-                  <ProductCard
-                    image="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNsb3RoZXN8ZW58MHx8MHx8fDA%3D"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />{" "}
-                  <ProductCard
-                    image="https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-02.jpg"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />
-                  <ProductCard
-                    image="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNsb3RoZXN8ZW58MHx8MHx8fDA%3D"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />{" "}
-                  <ProductCard
-                    image="https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-02.jpg"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />
-                  <ProductCard
-                    image="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNsb3RoZXN8ZW58MHx8MHx8fDA%3D"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />{" "}
-                  <ProductCard
-                    image="https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-02.jpg"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />
-                  <ProductCard
-                    image="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNsb3RoZXN8ZW58MHx8MHx8fDA%3D"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />{" "}
-                  <ProductCard
-                    image="https://tailwindui.com/img/ecommerce-images/category-page-02-image-card-02.jpg"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />
-                  <ProductCard
-                    image="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNsb3RoZXN8ZW58MHx8MHx8fDA%3D"
-                    productName="Sample Product"
-                    price="99.99"
-                    discount={20}
-                  />
+                  </List>
+
+                  {filters.map((section) => (
+                    <FilterComponent
+                      section={section}
+                      openFilter={openFilter}
+                      handleFilterToggle={handleFilterToggle}
+                    />
+                  ))}
                 </div>
               </Grid>
+            )}
+            <Grid
+              container
+              item
+              xs={12}
+              md={9}
+              spacing={isMobile ? 0 : 1}
+              className="sm:!pt-8 sm:!pl-8"
+            >
+              {products?.success &&
+                products?.data?.products.map((product: any, index: number) => (
+                  <Grid item xs={6} sm={4} md={3} key={index}>
+                    <Link to={`/product/${product._id}`}>
+                      <ProductCard
+                        image={product.images[0]}
+                        productName={product.name}
+                        price={product.price}
+                        discount={20}
+                      />
+                    </Link>
+                  </Grid>
+                ))}
             </Grid>
-          </section>
+          </Grid>
         </main>
       </div>
     </div>

@@ -75,6 +75,12 @@ const apiSlice = createApi({
         credentials: "include",
       }),
     }),
+    getProductById: builder.query({
+      query: (id) => ({
+        url: `/products/${id}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 

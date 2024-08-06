@@ -4,7 +4,7 @@ import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
 import { motion } from "framer-motion";
-
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 type props = {
   image: string;
   productName: string;
@@ -18,69 +18,79 @@ const ProductCard: React.FC<props> = ({
   discount,
 }) => {
   const originalPrice = parseFloat(price);
-  const discountedPrice = discount ? (originalPrice * (1 - discount / 100)).toFixed(2) : price;
+  const discountedPrice = discount
+    ? (originalPrice * (1 - discount / 100)).toFixed(2)
+    : price;
+  const item = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+    },
+  };
+  const container = {
+    hidden: { opacity: 1, scale: 0 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        delayChildren: 0.5,
+        staggerChildren: 0.3,
+      },
+    },
+  };
   return (
     <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    transition={{ duration: 0.5 }}
-    whileHover={{ scale: 1.03 }}
-  >
-    <Card className="max-w-xs mx-auto mb-4 bg-white rounded-xl shadow-md overflow-hidden">
-      <div className="relative">
-        <CardMedia
-          component="img"
-          image={image}
-          alt={productName}
-          className=" w-full object-contain object-center aspect-[3/4]"
-        />
-      </div>
-      <CardContent className="p-4">
-        <Typography variant="h6" component="h2" className="font-semibold mb-2">
-          {productName}
-        </Typography>
-        <div className="flex items-center">
-          {discount && (
-            <Typography
-              variant="body1"
-              sx={{
-                color: "green",
-                marginRight: 2,
-              }}
-            >
-              {discount}% OFF
-            </Typography>
-          )}
-          {discount && (
-            <Typography
-              variant="body1"
-              sx={{
-                textDecoration: "line-through",
-                color: "gray",
-                marginRight: 2,
-              }}
-            >
-             ₹{originalPrice.toFixed(2)}
-            </Typography>
-          )}
-          <Typography
-            variant="body1"
-            sx={{ color: discount ? "inherit" : "gray" }}
-          >
-            ${discount ? discountedPrice : price}
-          </Typography>
-          
+      className="container"
+      variants={container}
+      initial="hidden"
+      animate="visible"
+    >
+      <Card className="max-w-xs mx-auto  bg-white rounded-xl shadow-md overflow-hidden p-2 aspect-9/16 md:aspect-auto">
+        <div className="aspect-square  w-full overflow-hidden rounded-lg bg-gray-200 xl:aspect-h-8 xl:aspect-w-7">
+          <CardMedia
+            component="img"
+            image={image}
+            alt={productName}
+            className="h-full w-full object-cover object-center group-hover:opacity-75"
+          />
         </div>
-        {/* <Typography
-              variant="body1"
-             className="text-rose-600"
-            >
-            only 10 left
-            </Typography> */}
-      </CardContent>
-    </Card>
+        <motion.div className="item" variants={item}>
+          <CardContent className="!p-2 h-1/2 flex flex-col justify-between md:justify-start ">
+            <Typography className="!text-[12px] font-semibold mb-2">
+              {productName?.length > 10
+                ? `${productName.slice(0, 14)}...`
+                : productName}
+            </Typography>
+            <div className="flex items-center justify-between gap-1">
+              <Typography
+                className={` ${
+                  discount ? "text-inherit" : "text-gray-500"
+                } !text-[12px]`}
+              >
+                ₹{discount ? discountedPrice : price}
+              </Typography>
+              {discount && (
+                <Typography className="text-gray-500 line-through !text-[12px]">
+                  ₹{originalPrice.toFixed(2)}
+                </Typography>
+              )}
+              {discount && (
+                <div className="flex justify-between items-center">
+                  <ArrowDownwardIcon
+                    fontSize="small"
+                    className="text-green-500 !text-[12px] "
+                  />
+                  <Typography className="!text-[12px] text-green-500">
+                    {discount}%
+                  </Typography>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </motion.div>
+      </Card>
     </motion.div>
-
   );
 };
 
