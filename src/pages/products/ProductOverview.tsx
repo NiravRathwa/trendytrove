@@ -45,8 +45,10 @@ const ProductOverview = () => {
   const [openProductDes, setopenProductDes] = React.useState(false);
   const [openReturnPolicy, setOpenReturnPolicy] = useState<boolean>(false);
   const dispatch = useDispatch();
+  console.log(product)
   const handleAdd = () => {
     if (product) {
+      console.log('ff')
       dispatch(
         addItem({
           id: product._id,
@@ -80,8 +82,8 @@ const ProductOverview = () => {
   return (
     <Card className="flex mx-auto flex-col sm:flex-row items-center">
       {open && <Cart open={open} setOpen={setOpen} products={cartItems} />}
-      <CardMedia className="w-72 h-96 p-4" image="https://media.istockphoto.com/id/1696725120/photo/portrait-of-handsome-young-man-giving-thumbs-up-against-gray-background.jpg?s=2048x2048&w=is&k=20&c=ieJkpur2v_1YtuIRVd_VaXsyPiAngsUvTcECMsTCyX4=" title={product?.name} />
-      <CardContent className="flex-1 p-4 w-auto md:max-w-md flex flex-col gap-y-3">
+      <CardMedia className="w-72 h-96 p-4" image="" title={product?.name} />
+      <CardContent className="flex-1 p-4 w-auto md:max-w-md flex flex-col gap-y-3 relative">
         <Typography variant="h5" component="h2">
           {product?.name}
         </Typography>
@@ -261,13 +263,15 @@ const ProductOverview = () => {
             </Typography>
           </Collapse>
         </div>
-        <div className="flex items-center justify-between gap-1" >
+        <div className="flex items-center justify-between gap-1">
           <div className="">
             <div className="flex justify-center items-center flex-col">
               <Typography variant="h5">4.5</Typography>
               <Typography>7.5+ ratings</Typography>
               <Rating name="read-only" value={4.5} precision={0.5} readOnly />
-              <Button variant="outlined" className="!mt-2">Rate</Button>
+              <Button variant="outlined" className="!mt-2">
+                Rate
+              </Button>
             </div>
           </div>
           <div className="flex-1">
@@ -282,12 +286,7 @@ const ProductOverview = () => {
               }}
             >
               <span className="text-sm">5</span>
-              <Slider
-                aria-label="Volume"
-                value={100}
-                color="primary"
-                className="flex-none w-8"
-              />
+              <Slider aria-label="Volume" value={100} color="primary" />
               <span className="text-sm">(5M+)</span>
             </Stack>
             <Stack
@@ -359,6 +358,30 @@ const ProductOverview = () => {
               150
             </Stack>
           </div>
+        </div>
+        <div>
+          <Button
+            variant="contained"
+            fullWidth={isMobile}
+            sx={{
+              backgroundColor: "var(--accent)",
+            }}
+            // className="!fixed bottom-0 [left:0.4rem] "
+            onClick={handleAdd}
+          >
+            Add To cart
+          </Button>
+          <Button
+            variant="contained"
+            fullWidth={isMobile}
+            sx={{
+              backgroundColor: "var(--accent)",
+            }}
+            // className="!fixed bottom-0 [left:0.4rem] "
+            onClick={() => setOpen(true)}
+          >
+            Add To cart
+          </Button>
         </div>
         {/* <div className="flex space-x-4 mb-6 text-sm font-medium">
             <div className="flex-auto flex space-x-4">

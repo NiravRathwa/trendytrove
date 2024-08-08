@@ -5,10 +5,12 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import { combineReducers } from "redux";
 import productReducer from "./productsSlice";
+import CartSlice from "./CartSlice"
 const rootReducer = combineReducers({
   [apiSlice.reducerPath]: apiSlice.reducer,
   user: userReducer,
   products: productReducer,
+  cart:CartSlice
 });
 
 const persistConfig = {

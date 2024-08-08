@@ -52,6 +52,7 @@ const ProductCard: React.FC<props> = ({
             component="img"
             image={image}
             alt={productName}
+            loading="lazy"
             className="h-full w-full object-cover object-center group-hover:opacity-75"
           />
         </div>
