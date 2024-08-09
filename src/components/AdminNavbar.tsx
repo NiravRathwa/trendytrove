@@ -187,7 +187,8 @@ export default function AdminNavbar() {
           </Box>
         </Toolbar>
       </AppBar>
-      {user?.role==="admin"&&<Drawer
+      
+      <Drawer
         sx={{
           width: drawerWidth,
           flexShrink: 0,
@@ -241,7 +242,7 @@ export default function AdminNavbar() {
           ))}
         </List>
       </Drawer>
-}
+
             <Main open={open} className="bg-background h-screen">
         <DrawerHeader />
         {selectedOption === "Users" && (
