@@ -17,6 +17,7 @@ import TablePagination from "@mui/material/TablePagination";
 import Loader from "components/Loader";
 import { toast, ToastContainer } from "react-toastify";
 import AddProduct from "./AddProduct";
+import DeleteModel from "components/deleteModel/DeleteModel";
 
 type Product = {
   name: string;
@@ -30,6 +31,7 @@ const ProductsTable: React.FC = () => {
     refetchOnMountOrArgChange: true,
   });
   const [open, setOpen] = useState<boolean>(false);
+  const [openDeleteModel, setOpenDeleteModel] = useState<boolean>(false);
   const [editData, setEditData] = useState(null);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -57,6 +59,13 @@ const ProductsTable: React.FC = () => {
         <ToastContainer />
         {open && (
           <AddProduct open={open} setOpen={setOpen} editData={editData} />
+        )}
+        {openDeleteModel && (
+          <DeleteModel
+            open={openDeleteModel}
+            handleClose={() => setOpenDeleteModel(false)}
+            name="Product"
+          />
         )}
         {isLoading && <Loader />}
         <Table sx={{ minWidth: 350 }} aria-label="Products Table">
@@ -92,6 +101,7 @@ const ProductsTable: React.FC = () => {
                       </IconButton>
                       <IconButton
                         sx={{ color: theme.palette.customAccent[500] }}
+                        onClick={() => setOpenDeleteModel(true)}
                       >
                         <DeleteIcon />
                       </IconButton>

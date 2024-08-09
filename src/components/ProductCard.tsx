@@ -59,11 +59,11 @@ const ProductCard: React.FC<props> = ({
         <motion.div className="item" variants={item}>
           <CardContent className="!p-2 h-1/2 flex flex-col justify-between md:justify-start ">
             <Typography className="!text-[12px] font-semibold mb-2">
-              {productName?.length > 10
-                ? `${productName.slice(0, 14)}...`
+              {productName?.length > 14
+                ? `${productName.slice(0, 30)}...`
                 : productName}
             </Typography>
-            <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center gap-2">
               <Typography
                 className={` ${
                   discount ? "text-inherit" : "text-gray-500"
