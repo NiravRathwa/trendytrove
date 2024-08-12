@@ -5,17 +5,14 @@ import {
   IconButton,
   InputBase,
   Button,
-  ButtonBase,
   MenuItem,
-  Avatar,
-  Tooltip,
   Container,
   Typography,
   Box,
-  Menu,
   Drawer,
   useMediaQuery,
   Divider,
+  Collapse,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import CloseIcon from "@mui/icons-material/Close";
@@ -25,43 +22,18 @@ import MenuIcon from "@mui/icons-material/Menu";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 
-const container = {
-  hidden: { opacity: 1, scale: 0 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      delayChildren: 0.3,
-      staggerChildren: 0.2,
-    },
-  },
-};
 const Navbar = () => {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
-    null
-  );
+
   const [open, setOpen] = React.useState(false);
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
-    null
-  );
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
+  };
+  const [openSearch, setOpenSearch] = React.useState(true);
+
+  const handleClick = () => {
+    setOpenSearch(!openSearch);
   };
   const variants = {
     open: {
@@ -81,11 +53,11 @@ const Navbar = () => {
   };
   const variantsUl = {
     open: {
-      transition: { staggerChildren: 0.07, delayChildren: 0.2 }
+      transition: { staggerChildren: 0.07, delayChildren: 0.2 },
     },
     closed: {
-      transition: { staggerChildren: 0.05, staggerDirection: -1 }
-    }
+      transition: { staggerChildren: 0.05, staggerDirection: -1 },
+    },
   };
   const DrawerList = (
     <div className="p-5">
@@ -146,30 +118,6 @@ const Navbar = () => {
             }`}
           >
             <MenuIcon onClick={toggleDrawer(true)} sx={{ color: "black" }} />
-            {/* <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                display: { xs: "block", md: "none" },
-              }}
-            >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center">{page}</Typography>
-                </MenuItem>
-              ))}
-            </Menu> */}
             <Typography
               variant="h6"
               noWrap
@@ -215,7 +163,7 @@ const Navbar = () => {
           <Drawer open={open} onClose={toggleDrawer(false)}>
             {DrawerList}
           </Drawer>
-          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}></Box>
+          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}/>
 
           <Box sx={{ flexGrow: 0 }}>
             {!isMobile && (
@@ -233,7 +181,12 @@ const Navbar = () => {
           </Box>
           <Box sx={{ flexGrow: 0 }} className="flex">
             {isMobile && (
-              <IconButton edge="end" type="submit" aria-label="search">
+              <IconButton
+                edge="end"
+                type="submit"
+                aria-label="search"
+                onClick={handleClick}
+              >
                 <SearchIcon sx={{ color: "black" }} />
               </IconButton>
             )}
@@ -246,6 +199,26 @@ const Navbar = () => {
             </IconButton>
           </Box>
         </Toolbar>
+        {isMobile && (
+        <Collapse in={openSearch} timeout="auto" unmountOnExit>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="flex items-center bg-gray-200 p-2 rounded-md h-10 mb-5"
+        >
+          <InputBase
+            placeholder="Search…"
+            className="ml-2 flex-1 text-gray-800"
+            inputProps={{ "aria-label": "search" }}
+          />
+          <IconButton type="submit" aria-label="search">
+            <SearchIcon sx={{ color: "black" }} />
+          </IconButton>
+        </motion.div>
+      </Collapse>
+        )}
       </Container>
     </AppBar>
   );
